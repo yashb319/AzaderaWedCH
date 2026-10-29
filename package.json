@@ -1,0 +1,13 @@
+{
+  "name": "azadera-wedding",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Configurable static wedding invitation with an original Three.js entrance",
+  "scripts": {
+    "vendor": "node tools/vendor-three.mjs",
+    "check": "node --check script.js && node --check three-effects.js && node --check wedding.config.js"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  }
+}

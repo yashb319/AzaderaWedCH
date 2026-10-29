@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#faf6ee">
+  <meta name="description" content="A celebration of two hearts, two traditions, and one beautiful beginning.">
+  <title>Azadera · A wedding celebration</title>
+  <link rel="icon" href="./assets/flower.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./wedding.config.js" defer></script>
+  <script src="./script.js" defer></script>
+  <script src="./three-effects.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <section class="entrance" id="entrance" role="dialog" aria-modal="true" aria-labelledby="entrance-title" hidden>
+    <div class="gate gate-left" aria-hidden="true"><div class="gate-arch"></div></div>
+    <div class="gate gate-right" aria-hidden="true"><div class="gate-arch"></div></div>
+    <div class="entrance-content">
+      <p class="eyebrow">Two traditions. One beautiful beginning.</p>
+      <h2 id="entrance-title">A love worth<br>celebrating.</h2>
+      <div class="ritual" role="img" aria-label="An illustrated bride in an ivory and gold Kerala-inspired sari and groom in a North Indian-inspired sherwani circle a ceremonial flame.">
+        <div class="ritual-ring"></div><span class="flame" aria-hidden="true">✦</span>
+        <div class="orbit"><div class="orbit-couple">
+          <svg viewBox="0 0 100 130" aria-hidden="true"><path d="M13 57Q30 46 44 60L48 119H9Z" fill="#faf2db"/><path d="M14 59L44 107M11 111H47" stroke="#d3a449" stroke-width="7"/><path d="M17 37Q16 17 30 17Q46 18 43 40" fill="#282421"/><circle cx="30" cy="36" r="13" fill="#b77955"/><path d="M17 29Q27 11 43 30" fill="#282421"/><circle cx="30" cy="34" r="2" fill="#b34b3c"/><path d="M53 59Q71 48 85 60L93 120H49Z" fill="#e2bb79"/><path d="M62 59L85 114" stroke="#ae4e40" stroke-width="8"/><circle cx="71" cy="36" r="14" fill="#a96c49"/><path d="M56 30Q54 11 75 17L86 29Z" fill="#b45140"/><path d="M57 25L86 23" stroke="#edce8f" stroke-width="4"/><path d="M39 66Q48 81 59 65" fill="none" stroke="#b77955" stroke-width="6"/><path d="M22 51L30 59L38 51M63 51L71 59L79 51" fill="none" stroke="#b65240" stroke-width="4"/></svg>
+        </div></div>
+      </div>
+      <button class="button" id="open-gates">Open the gates <span aria-hidden="true">↗</span></button>
+      <button class="text-button entrance-skip" id="skip-entrance">Skip to the celebration</button>
+      <p class="three-status" id="three-status" role="status" hidden></p>
+    </div>
+  </section>
+  <div id="site">
+    <div class="demo-banner" id="demo-banner">✧ A little inspiration, for now. All wedding details below are samples.</div>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="Wedding home"><span class="brand-icon" aria-hidden="true">❋</span><span id="brand-name">AZADERA</span></a>
+      <nav aria-label="Main navigation"><a href="#story">Our story</a><a href="#celebrations">The celebrations</a><a href="#people">The couple</a><a href="#location">Getting there</a></nav>
+      <a class="header-cta" href="#celebrations">You're invited <span aria-hidden="true">↗</span></a>
+    </header>
+    <main id="main">
+      <section class="hero section-shell" id="home" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="tiny-flower" aria-hidden="true">✳</span> Together with our families</p>
+          <h1 id="hero-title"><span id="groom-first"></span><em>&amp;</em><span id="bride-first"></span></h1>
+          <p class="hero-tagline" id="hero-tagline"></p>
+          <div class="hero-date"><span aria-hidden="true"></span><time id="wedding-date"></time><span aria-hidden="true"></span></div>
+          <p class="hero-place" id="hero-place"></p>
+          <a class="button" href="#celebrations">Join our celebration <span aria-hidden="true">↗</span></a>
+          <p class="hero-note">Two families, countless blessings, one forever.</p>
+        </div>
+        <div class="hero-art">
+          <div class="art-caption"><span aria-hidden="true">✧</span> Where jasmine meets marigold</div>
+          <img id="hero-image" src="./assets/wedding-garden.svg" width="640" height="720" alt="Original illustration of a bride in an ivory and gold Kerala-inspired sari and a groom in a coral sherwani, beneath a flower-draped pavilion with palms, brass lamps, and marigolds.">
+          <div class="art-stamp" aria-hidden="true">TWO HEARTS<br><span>one home</span><br>TWO TRADITIONS</div>
+        </div>
+        <a class="scroll-hint" href="#welcome"><span aria-hidden="true">↓</span> A beautiful beginning</a>
+      </section>
+      <section class="welcome section-shell" id="welcome" aria-labelledby="welcome-title">
+        <p class="eyebrow">Namaste. Namaskaram. Welcome.</p>
+        <h2 id="welcome-title">Different roots.<br><em>The same kind of forever.</em></h2>
+        <p id="welcome-copy"></p><div class="tradition-divider" aria-hidden="true"><span></span> ❋ <span></span></div>
+      </section>
+      <section class="story section-shell" id="story" aria-labelledby="story-title">
+        <div class="story-heading"><p class="eyebrow">The best kind of unexpected</p><h2 id="story-title">It started with a hello.<br><em>It became everything.</em></h2><p id="story-intro"></p><span class="handwritten">Some things are just meant to be.</span></div>
+        <div class="story-timeline" id="story-timeline"></div>
+      </section>
+      <section class="celebrations" id="celebrations" aria-labelledby="celebrations-title">
+        <div class="section-shell"><div class="section-heading"><div><p class="eyebrow">A few days. A lifetime of memories.</p><h2 id="celebrations-title">Let the <em>celebrations begin.</em></h2></div><p>Come for the rituals.<br>Stay for the dancing.</p></div><div class="event-grid" id="event-grid"></div><p class="event-footnote" id="event-footnote"></p></div>
+      </section>
+      <section class="people section-shell" id="people" aria-labelledby="people-title">
+        <p class="eyebrow">The people behind the “I do”</p><h2 id="people-title">A perfect match.<br><em>In our own imperfect way.</em></h2><div class="couple-grid" id="couple-grid"></div>
+      </section>
+      <section class="location section-shell" id="location" aria-labelledby="location-title">
+        <div class="location-illustration" aria-hidden="true">
+          <svg viewBox="0 0 500 390"><rect width="500" height="390" rx="180" fill="#eee9db"/><path d="M0 293Q120 222 243 281T500 251V390H0" fill="#c6ceba"/><path d="M0 335Q160 280 280 327T500 292" fill="none" stroke="#faf6ee" stroke-width="26"/><path d="M300 390L220 225" stroke="#faf6ee" stroke-width="22"/><path d="M64 320V133M67 143Q8 130 21 86Q58 92 67 143Q64 78 101 64Q127 105 67 143Q126 116 147 150Q100 175 67 143" stroke="#6b806b" stroke-width="6" fill="#6b806b"/><path d="M417 281V113M417 123Q364 100 374 68Q409 76 417 123Q412 63 445 49Q470 86 417 123Q465 106 487 138Q444 155 417 123" stroke="#6b806b" stroke-width="6" fill="#6b806b"/><path d="M151 258V163H342V258" fill="#f3ddb9"/><path d="M129 166L245 94L363 166Z" fill="#b96b52"/><path d="M157 144L245 81L336 144" fill="none" stroke="#714b3e" stroke-width="8"/><path d="M179 258V192H211V258M278 258V192H310V258" fill="#b68e64"/><path d="M228 258V211Q245 187 262 211V258" fill="#714b3e"/><path d="M167 174H327M167 184H327" stroke="#d8b073" stroke-width="3"/><path d="M246 48C219 48 205 68 205 88C205 116 246 145 246 145S287 116 287 88C287 66 273 48 246 48" fill="#a64d3e"/><circle cx="246" cy="87" r="13" fill="#faf6ee"/></svg>
+          <span class="map-label">The journey is part of the joy.</span>
+        </div>
+        <div class="location-copy"><p class="eyebrow">Find your way to our forever</p><h2 id="location-title">A beautiful place.<br><em>Our favourite people.</em></h2><p id="travel-intro"></p><div id="venue-list"></div><div class="travel-note" id="travel-note"></div></div>
+      </section>
+      <section class="closing" aria-labelledby="closing-title"><p class="eyebrow">With full hearts &amp; open arms</p><h2 id="closing-title">It wouldn't be the same<br><em>without you.</em></h2><p id="closing-copy"></p><a class="button" id="contact-link" hidden>Get in touch <span aria-hidden="true">↗</span></a><span class="closing-flower" aria-hidden="true">❋</span></section>
+    </main>
+    <footer class="section-shell"><a class="brand" href="#home"><span class="brand-icon" aria-hidden="true">❋</span><span id="footer-names"></span></a><p>Made for a lifetime of togetherness.</p><button class="text-button" id="replay-entrance">Replay the welcome <span aria-hidden="true">↻</span></button><span id="footer-demo">Demo wedding · replace with your details</span></footer>
+  </div>
+  <noscript><div class="error-note">Please enable JavaScript to load wedding details from wedding.config.js. This website contains fictional demo wedding content.</div></noscript>
+</body>
+</html>
