@@ -1,23 +1,23 @@
 // Personalize your invitation here. All details below are FICTIONAL DEMO content.
 // Keep JavaScript quotes, commas, and brackets. See README.md for editing help.
 window.WEDDING_CONFIG = {
-  demoMode: true, // Set false only after replacing ALL demo details.
-  siteName: "AZADERA",
-  pageTitle: "Aarav & Devika · A wedding celebration (Demo)",
-  description: "Demo wedding website: two hearts, two traditions, and one beautiful beginning.",
+  demoMode: false, // Set false only after replacing ALL demo details.
+  siteName: "ATHIRAwedsYASH",
+  pageTitle: "Yash & Athira · A wedding celebration",
+  description: "Two hearts, two traditions, and one beautiful beginning.",
   locale: "en-IN",
   couple: {
     groom: {
-      firstName: "Aarav",
-      fullName: "Aarav Sharma",
-      roots: "Delhi, with love",
+      firstName: "Yash",
+      fullName: "Yash Bansal",
+      roots: "Hapur, with love",
       bio: "The calm to her whirlwind. A lover of mountain mornings, old Hindi songs, and a perfectly made cup of chai. He knew it was forever when home stopped being a place and started being a person.",
       image: "", // Optional local path ("./assets/groom.jpg") or HTTPS image URL.
       imageAlt: "Portrait of the groom"
     },
     bride: {
-      firstName: "Devika",
-      fullName: "Devika Nair",
+      firstName: "Athira",
+      fullName: "Athira Nair",
       roots: "Kerala, at heart",
       bio: "The sunshine in every room. Happiest with a book, the sea nearby, and one more story to tell. She brings the laughter, the little adventures, and a love as warm as her favourite filter coffee.",
       image: "",
@@ -29,13 +29,13 @@ window.WEDDING_CONFIG = {
     alt: "Original illustration of a bride in an ivory and gold Kerala-inspired sari and a groom in a coral sherwani beneath a flower-draped wedding pavilion with palms, brass lamps, and marigolds."
   },
   wedding: {
-    date: "2027-12-12", // YYYY-MM-DD. Times below are displayed exactly as written.
-    locationLabel: "Kochi, Kerala · India",
+    date: "2027-12-03", // YYYY-MM-DD. Times below are displayed exactly as written.
+    locationLabel: "Guruvyaur, Kerala · India",
     tagline: "A little North. A little South.\nA whole lot of love.",
     welcome: "From the warmth of Kerala to the vibrant heart of North India, our worlds are coming together. Join us as we weave our traditions, our families, and our stories into a celebration that is entirely our own.",
-    eventFootnote: "Sample schedule · All times are in Indian Standard Time (IST). Final details will be shared here.",
+    eventFootnote: "All times are in Indian Standard Time (IST).",
     closing: "Bring your blessings, your biggest smiles, and your dancing shoes. We can't wait to celebrate this new chapter with you.",
-    contactEmail: "" // Optional. Your wedding contact email enables a contact button.
+    contactEmail: "yashb319@gmail.com" // Optional. Your wedding contact email enables a contact button.
   },
   story: {
     intro: "Not quite a movie meet-cute. Something better: a small moment that turned into our favourite story. Here's a little glimpse of our journey.",
@@ -47,7 +47,7 @@ window.WEDDING_CONFIG = {
   },
   // Give venues unique ids; each event's venueId must match one.
   venues: [
-    { id: "courtyard", name: "The Jasmine Courtyard (Demo)", address: "Sample celebration venue · Fort Kochi, Kerala, India", mapQuery: "Fort Kochi, Kerala, India", note: "A sample venue for our pre-wedding celebrations." },
+    { id: "Guruvyaur", name: "Guruvyaur Temple", address: "Guruvyaur, Kerala, India", mapQuery: "Guruvyaur Temple", note: "Temple Marriage Venue" },
     { id: "garden", name: "The Backwater Garden (Demo)", address: "Sample wedding venue · Kochi, Kerala, India", mapQuery: "Kochi, Kerala, India", note: "A sample garden setting for the wedding ceremony." }
   ],
   events: [
