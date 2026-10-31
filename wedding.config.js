@@ -47,16 +47,22 @@ window.WEDDING_CONFIG = {
   },
   // Give venues unique ids; each event's venueId must match one.
   venues: [
-    { id: "Guruvyaur", name: "Guruvyaur Temple", address: "Guruvyaur, Kerala, India", mapQuery: "Guruvyaur Temple", note: "Temple Marriage Venue" },
-    { id: "garden", name: "The Backwater Garden (Demo)", address: "Sample wedding venue · Kochi, Kerala, India", mapQuery: "Kochi, Kerala, India", note: "A sample garden setting for the wedding ceremony." }
+    { id: "raja-ki-haveli", name: "Raja ki haveli", address: "Hapur, Uttar Pradesh, India", mapQuery: "Raja ki haveli, Hapur, Uttar Pradesh", note: "" },
+    { id: "shri-krishan-temple", name: "Shri Krishan Temple", address: "Guruvyaur, Kerala, India", mapQuery: "Shri Krishan Temple, Guruvyaur, Kerala", note: "" },
+    { id: "mana", name: "Mana", address: "Guruvyaur, Kerala, India", mapQuery: "Mana, Guruvyaur, Kerala", note: "" },
+    { id: "puttom-royal", name: "Puttom Royal", address: "Trivandrum, Kerala, India", mapQuery: "Puttom Royal, Trivandrum, Kerala", note: "" },
+    { id: "tonight", name: "Tonight", address: "Hapur, Uttar Pradesh, India", mapQuery: "Tonight, Hapur, Uttar Pradesh", note: "" },
+    { id: "manohar-regency", name: "Manohar Regency", address: "Hapur, Uttar Pradesh, India", mapQuery: "Manohar Regency, Hapur, Uttar Pradesh", note: "" }
   ],
   events: [
-    { name: "Roka", date: "2027-12-09", time: "11:00 AM", venueId: "courtyard", icon: "flower", tone: "rose", subtitle: "Where our families become one", description: "Blessings, happy tears, and the beginning of a beautiful bond.", dressCode: "Festive Indian" },
-    { name: "Ring ceremony", date: "2027-12-09", time: "6:00 PM", venueId: "courtyard1", icon: "rings", tone: "sand", subtitle: "A little sparkle. A big promise.", description: "An evening to exchange rings and celebrate our forever.", dressCode: "Elegant evening wear" },
-    { name: "Mehendi", date: "2027-12-10", time: "3:00 PM", venueId: "courtyard2", icon: "leaf", tone: "sage", subtitle: "Love, written in henna", description: "Intricate patterns, favourite songs, and stories over chai.", dressCode: "Shades of green" },
-    { name: "Haldi", date: "2027-12-11", time: "10:00 AM", venueId: "courtyard3", icon: "sun", tone: "yellow", subtitle: "A little sunshine, a lot of laughter", description: "A joyful morning of turmeric, flowers, and playful blessings.", dressCode: "A splash of yellow" },
-    { name: "Sangeet", date: "2027-12-11", time: "7:00 PM", venueId: "courtyard4", icon: "music", tone: "lavender", subtitle: "Two families. One dance floor.", description: "Bring your best moves. We'll bring the music and the memories.", dressCode: "Ready to sparkle" },
-    { name: "The wedding", date: "2027-12-12", time: "10:30 AM", venueId: "garden", icon: "lamp", tone: "peach", subtitle: "Two traditions, one sacred promise", description: "Kerala grace meets North Indian warmth as we begin our next chapter.", dressCode: "Traditional Indian · ivory & gold welcome" }
+    { name: "Roka", date: "2026-11-11", time: "5:00 PM to 9:00 PM", venueId: "raja-ki-haveli", icon: "flower", tone: "rose", subtitle: "Hapur, Uttar Pradesh", description: "", dressCode: "" },
+    { name: "Kerala Marriage", date: "2026-12-03", time: "11:00 AM to 12:00 PM", venueId: "shri-krishan-temple", icon: "lamp", tone: "peach", subtitle: "Guruvyaur, Kerala", description: "", dressCode: "" },
+    { name: "Kerala Wedding rest Rituals", date: "2026-12-03", time: "1:00 PM to 4:00 PM", venueId: "mana", icon: "flower", tone: "sand", subtitle: "Guruvyaur, Kerala", description: "", dressCode: "" },
+    { name: "Kerala Reception", date: "2026-12-06", time: "5:00 PM to 9:00 PM", venueId: "puttom-royal", icon: "flower", tone: "sage", subtitle: "Trivandrum, Kerala", description: "", dressCode: "" },
+    { name: "God bharai & Sagai", date: "2027-02-13", time: "1:00 PM to 10:00 PM", venueId: "tonight", icon: "rings", tone: "sand", subtitle: "Hapur, Uttar Pradesh", description: "", dressCode: "" },
+    { name: "Haldi & Mahendi", date: "2027-02-14", time: "11:00 AM to 2:00 PM", venueId: "manohar-regency", icon: "sun", tone: "yellow", subtitle: "Hapur, Uttar Pradesh", description: "", dressCode: "" },
+    { name: "Sangeet", date: "2027-02-14", time: "7:00 PM to 11:00 PM", venueId: "manohar-regency", icon: "music", tone: "lavender", subtitle: "Hapur, Uttar Pradesh", description: "", dressCode: "" },
+    { name: "Hapur Marriage", date: "2027-02-15", time: "8:00 PM to 4:00 AM on 16 February 2027", venueId: "manohar-regency", icon: "lamp", tone: "peach", subtitle: "Hapur, Uttar Pradesh", description: "", dressCode: "" }
   ],
   travel: {
     intro: "We're gathering in beautiful Kochi, where swaying palms meet quiet backwaters. Here's where the memories will be made.",
