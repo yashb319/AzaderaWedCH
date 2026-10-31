@@ -1,8 +1,8 @@
 # Azadera · A wedding celebration
 
-A responsive static wedding website blending Kerala and North Indian Hindu-inspired visual traditions. A **Three.js 3D entrance** features dimensional brass-trimmed gates that swing open, and an original 3D bride and groom circling a ceremonial flame. Local SVG illustrations provide a graceful non-WebGL fallback. No trackers, external fonts, or CDN requests are used.
+A responsive static wedding invitation blending Kerala and North Indian Hindu-inspired visual traditions. **Three.js powers an explorable royal wedding fort**, not just an entrance animation: brass-trimmed gates open into a decorated courtyard with an individual themed pavilion for every configured event. Select a pavilion or its accessible navigation button to move into its space and read dates, venue, Maps links, directions, and dress code. Local SVG illustrations and semantic event navigation provide a graceful non-WebGL fallback. No trackers, external fonts, audio autoplay, visitor-data collection, or CDN requests are used.
 
-**All supplied names, dates, stories, and venues are fictional demo content. This is not a real wedding invitation.** The demo banner stays visible until you explicitly turn it off.
+Personal and event details are read from `wedding.config.js`. The illustrated fort and pavilions are **artistic thematic representations, not verified models of the actual venues**. Confirm venue locations before travel. Existing story/biography content may still need personalization; the website never invents family members or unprovided directions/dress requirements.
 
 ## Personalize the website
 
@@ -16,6 +16,51 @@ Edit **[`wedding.config.js`](./wedding.config.js)**. All personal details live i
 6. Replace travel information, site/page titles, and description.
 7. Optionally add photos to `assets/` and set `couple.groom.image`, `couple.bride.image`, and/or `heroImage.src`, for example `"./assets/groom.jpg"`. Set meaningful alternative text. Empty portrait image strings use the original illustrated portraits.
 8. After replacing **all** demo details, set `demoMode: false`.
+
+### Event rooms and additional details
+
+Every event automatically gets a pavilion, accessible selection button, and detail panel. Its `name` determines the default theme. Optionally add a `theme` field to override it:
+
+| Theme | Artistic room design |
+| --- | --- |
+| `roka` | Rose floral arch, family seating, warm rose light |
+| `kerala-marriage` | Ivory/gold, tiered roof, stylized banana leaves and brass lamps |
+| `rituals` | Wooden roof, ivory garlands, brass trays and tall lamps |
+| `reception` | Sage garden lounge, floral backdrop and table arrangements |
+| `sagai` | Interlocking gold rings, blush lighting and a display pedestal |
+| `haldi` | Marigold flower wall, yellow ceremonial bowl and concentric floral pattern |
+| `sangeet` | Lavender stage, geometric dance floor and decorative stage lights |
+| `hapur-marriage` | Coral/gold mandap, canopy, garlands and ceremonial flame |
+
+Decorations are respectful artistic motifs, not instructions about how your family observes a ceremony. The existing `tone` controls the pavilion's base colour; `theme` controls its architecture, decorations, room lighting, and coordinated detail-panel palette.
+
+Optional editable fields (add them inside the relevant event object):
+
+```js
+directions: "", // Your verified travel instructions. A venue can also have directions.
+details: "",    // Additional event information, displayed as plain text.
+dressCode: ""   // Leave blank until requirements are confirmed.
+```
+
+Event directions take precedence over venue directions. Empty directions and dress code explicitly display “not yet provided”; Maps links still use the configured venue query. An overnight event's `time` remains a display string, so include the next-day date explicitly.
+
+### Celebratory effects
+
+`experience.effects` sets whether celebratory effects start enabled. Visitors can switch **Celebration effects** off in the fort. Reduced motion disables them regardless of the configuration.
+
+Rooms have function-specific entrance moments: rose/ivory/garden petal showers, golden petals for Sagai and Haldi, a turmeric-inspired expanding golden floor ripple for Haldi, warm still lighting for the remaining rituals, and gently drifting luminous Sangeet lights. Showers last at most six seconds and are limited to 48 particles on phones or 90 elsewhere; they render only in the 3D room, never over its HTML details. There is no flashing or audio.
+
+Optionally add `effect: "petals"`, `"golden-petals"`, `"lights"`, `"warm-glow"`, or `"none"` to an event to override its theme's default.
+
+### Meet the family and relationship timeline
+
+`family.groom` and `family.bride` are arrays, initially empty. No real family members have been supplied. Empty arrays show an invitation to add details; add only information you want publicly visible:
+
+```js
+{ name: "Your family member's name", relationship: "Relationship", bio: "", image: "", imageAlt: "" }
+```
+
+Photos are optional and use the same local/HTTPS rules as couple portraits. `story.chapters` drives the numbered relationship timeline in array order: edit its existing `label`, `date`, `title`, and `text`, or add/remove chapters. No extra milestones are generated.
 
 Use the pencil button in GitHub's file editor, then commit your changes to `main`. Preserve JavaScript quotes, commas, and brackets. Configuration errors appear visibly rather than silently hiding wedding details. Text is rendered as text, not executable HTML. Use only photos you own or have permission to publish, and remember that this repository and its contents are public.
 
@@ -35,7 +80,9 @@ For development, `npm ci` installs the pinned Three.js version, `npm run vendor`
 
 ## GitHub Pages
 
-Public URL: **https://yashb319.github.io/AzaderaWedCH/**
+Repository: **https://github.com/yashb319/ATHIRAwedsYASH**
+
+Public URL: **https://yashb319.github.io/ATHIRAwedsYASH/**
 
 In the repository, open **Settings → Pages → Build and deployment**, select **Deploy from a branch**, then **main** and **/ (root)**, and save. GitHub publishes `index.html` directly; `.nojekyll` disables Jekyll processing. Updates to `main` trigger a new Pages deployment and may take a few minutes to appear. See the repository's **Actions** tab for deployment status.
 
@@ -43,6 +90,12 @@ All local asset references are relative, so the website works under the GitHub p
 
 ## Accessibility and entrance
 
-The welcome gate has keyboard-operable open/skip buttons, an Escape shortcut, a focus trap, and a replay button in the footer. The page behind it is inert while the welcome is open. Visitors who prefer reduced motion, or arrive at a direct section link, bypass the entrance; reduced motion also disables animations and smooth scrolling. Reduced-motion replay uses the static illustrated scene without initializing WebGL. WebGL initialization or context failures display an explicit fallback notice. The renderer caps pixel density and pauses while the entrance or browser tab is hidden. Navigation, visible focus rings, responsive layouts, and original illustrations with accessible descriptions are included.
+The welcome has keyboard-operable open/skip buttons and traps focus while the invitation behind it is inert. Open the gates to enter the courtyard. Tap/click an event pavilion or use the event buttons, then “Back to courtyard”, Previous/Next, or “Read the invitation”. Escape returns from an event to the courtyard, then closes the experience. The story, couple, family, and conventional event cards remain available in the invitation, and every event card can reopen its immersive room.
+
+“Begin the celebration tour” starts with the first configured event; Previous/Next provide a guest-paced chronological journey rather than automatically rushing through rooms. Optional courtyard drag-look and accessible left/right/recenter controls change the viewing angle within safe bounds. “Discover our story” and “Meet our families” take visitors directly from the courtyard to those invitation sections. Physical pavilion picking and floating labels both open the same event details as the semantic buttons, so relatives never need game-like movement controls.
+
+Visitors who prefer reduced motion, or arrive at a direct section link, bypass the initial entrance. Reduced-motion replay initially uses the static illustrated welcome; explicitly entering the fort renders a still 3D view without animated camera travel, orbiting, or continuous GPU rendering. Motion preference changes are respected immediately. Missing WebGL or context loss displays a notice and leaves all event controls/details accessible. Mobile detail sheets scroll independently with the 3D room above them.
+
+Repeated architecture, flowers, and lamps use instanced geometry. One WebGL context, bounded pixel density (1 on phones, at most 1.5 elsewhere), adaptive density reduction, a ~30 fps animation cap, no shadow maps or heavy models, and pause-on-hidden behavior limit GPU load. `window.WEDDING_EXPERIENCE.getState()` exposes basic scene diagnostics for validation. Each configuration event adds one room; very large event lists may need further layout tuning.
 
 The artwork is a stylized celebration of both traditions, not a claim that every family observes the same rituals. Adjust ceremony descriptions and schedules to reflect your own family's customs.

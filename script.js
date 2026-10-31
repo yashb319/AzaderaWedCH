@@ -80,9 +80,10 @@
     setText("footer-names", `${groom.firstName} & ${bride.firstName}`);
     byId("demo-banner").hidden = !config.demoMode;
     byId("footer-demo").hidden = !config.demoMode;
-    config.story.chapters.forEach(chapter => {
+    config.story.chapters.forEach((chapter, index) => {
       const article = element("article", "chapter");
       const meta = element("p", "chapter-meta", chapter.label);
+      meta.prepend(element("span", "chapter-index", String(index + 1).padStart(2, "0")));
       meta.append(element("span", "", chapter.date));
       article.append(meta, element("h3", "", chapter.title), element("p", "", chapter.text));
       byId("story-timeline").append(article);
@@ -98,8 +99,12 @@
       date.dateTime = event.date;
       details.append(date, externalLink(`${venue.name} ↗`, mapUrl(venue)));
       const dressCode = element("p", "dress-code");
-      dressCode.append(element("span", "", "Attire"), element("span", "", event.dressCode));
+      dressCode.append(element("span", "", "Attire"), element("span", "", event.dressCode || "Dress code not yet provided"));
       article.append(icon, element("span", "event-number", String(index + 1).padStart(2, "0")), element("h3", "", event.name), element("p", "event-subtitle", event.subtitle), element("p", "event-description", event.description), details, dressCode);
+      const directions = element("p", "event-directions", event.directions || venue.directions || "Directions not yet provided. Use the venue's Maps link to plan your journey.");
+      const explore = element("button", "explore-event", "Enter this celebration ↗");
+      explore.addEventListener("click", () => window.dispatchEvent(new CustomEvent("wedding:explore", { detail: { index, trigger: explore } })));
+      article.append(directions, explore);
       byId("event-grid").append(article);
     });
     ["groom", "bride"].forEach(role => {
@@ -119,6 +124,25 @@
       }
       article.append(portrait, element("p", "person-label", `Meet the ${role}`), element("h3", "", person.fullName), element("p", "person-roots", person.roots), element("p", "person-bio", person.bio));
       byId("couple-grid").append(article);
+    });
+    ["groom", "bride"].forEach(role => {
+      const section = element("section", "family-group");
+      section.append(element("h3", "", `${config.couple[role].firstName}'s family`));
+      const members = config.family?.[role] || [];
+      if (!members.length) section.append(element("p", "family-empty", "Family introductions are coming soon. Add names, relationships, and optional photos in wedding.config.js."));
+      members.forEach(member => {
+        const article = element("article", "family-member");
+        if (member.image) {
+          const image = element("img");
+          image.src = safeImage(member.image);
+          image.alt = member.imageAlt || `Portrait of ${member.name}`;
+          image.loading = "lazy";
+          article.append(image);
+        }
+        article.append(element("h4", "", member.name), element("p", "relationship", member.relationship || ""), element("p", "", member.bio || ""));
+        section.append(article);
+      });
+      byId("family-groups").append(section);
     });
     config.venues.forEach(venue => {
       const article = element("article", "venue");
@@ -159,6 +183,7 @@
     clearTimeout(exitTimer);
     opening = false;
     entrance.classList.remove("is-opening", "is-fading");
+    window.WEDDING_EXPERIENCE?.reset();
     entrance.hidden = false;
     site.inert = true;
     document.querySelector(".skip-link").inert = true;
@@ -166,6 +191,10 @@
     byId("open-gates").focus();
   };
   const closeEntrance = (animate = false) => {
+    if (animate && window.WEDDING_EXPERIENCE) {
+      window.WEDDING_EXPERIENCE.enter();
+      return;
+    }
     if (opening && animate) return;
     clearTimeout(exitTimer);
     const finish = () => {
@@ -191,16 +220,27 @@
     focusAfterClose = byId("replay-entrance");
     showEntrance();
   });
+  byId("explore-fort").addEventListener("click", () => window.dispatchEvent(new CustomEvent("wedding:explore", { detail: { trigger: byId("explore-fort") } })));
+  window.addEventListener("wedding:explore", event => {
+    focusAfterClose = event.detail.trigger || byId("explore-fort");
+    showEntrance();
+    if (window.WEDDING_EXPERIENCE) window.WEDDING_EXPERIENCE.enter(event.detail.index);
+    else window.addEventListener("wedding:experience-ready", () => window.WEDDING_EXPERIENCE.enter(event.detail.index), { once: true });
+  });
   entrance.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeEntrance();
+    if (event.key === "Escape") {
+      if (window.WEDDING_EXPERIENCE?.isInsideEvent()) window.WEDDING_EXPERIENCE.back();
+      else closeEntrance();
+    }
     if (event.key === "Tab") {
-      const first = byId("open-gates");
-      const last = byId("skip-entrance");
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      const focusable = Array.from(entrance.querySelectorAll('button:not(:disabled),a[href]')).filter(node => node.getClientRects().length && getComputedStyle(node).visibility !== "hidden");
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === byId("fort-title"))) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
   });
-  reducedMotion.addEventListener("change", () => { if (reducedMotion.matches && !entrance.hidden) closeEntrance(); });
+  reducedMotion.addEventListener("change", () => { if (reducedMotion.matches && !entrance.hidden && !entrance.classList.contains("is-exploring")) closeEntrance(); });
   if (!location.hash && !reducedMotion.matches) {
     focusAfterClose = document.querySelector(".header-cta");
     showEntrance();

@@ -28,6 +28,16 @@ window.WEDDING_CONFIG = {
     src: "./assets/wedding-garden.svg",
     alt: "Original illustration of a bride in an ivory and gold Kerala-inspired sari and a groom in a coral sherwani beneath a flower-draped wedding pavilion with palms, brass lamps, and marigolds."
   },
+  // Add real family members here; empty lists show an honest "details coming soon" state.
+  // Each member: { name: "", relationship: "", bio: "", image: "", imageAlt: "" }
+  family: {
+    groom: [],
+    bride: []
+  },
+  // Visitors can also turn these off in the fort. Reduced motion disables animation.
+  experience: {
+    effects: true
+  },
   wedding: {
     date: "2027-12-03", // YYYY-MM-DD. Times below are displayed exactly as written.
     locationLabel: "Guruvyaur, Kerala · India",

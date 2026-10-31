@@ -30,12 +30,53 @@
       <button class="text-button entrance-skip" id="skip-entrance">Skip to the celebration</button>
       <p class="three-status" id="three-status" role="status" hidden></p>
     </div>
+    <div class="fort-ui" id="fort-ui" hidden>
+      <header class="fort-toolbar">
+        <div><p class="eyebrow">An invitation to another world</p><h2 id="fort-title" tabindex="-1">The celebration courtyard</h2></div>
+        <div class="fort-controls">
+          <button class="fort-button" id="leave-fort">Read the invitation <span aria-hidden="true">↗</span></button>
+          <label class="fort-effects"><input type="checkbox" id="fort-effects" checked> Celebration effects</label>
+        </div>
+      </header>
+      <p class="fort-intro" id="fort-intro">Eight celebrations. Eight doors to explore. Choose a pavilion below or tap one in the courtyard.</p>
+      <div class="fort-discovery" id="fort-discovery">
+        <button class="fort-button" id="fort-tour">Begin the celebration tour →</button>
+        <button class="fort-button" id="fort-story">Discover our story</button>
+        <button class="fort-button" id="fort-family">Meet our families</button>
+        <div class="fort-view-controls" aria-label="Courtyard camera controls">
+          <button class="fort-button" id="fort-look-left" aria-label="Look left around courtyard">←</button>
+          <button class="fort-button" id="fort-recenter">Recenter view</button>
+          <button class="fort-button" id="fort-look-right" aria-label="Look right around courtyard">→</button>
+        </div>
+        <span class="fort-drag-hint">Drag the courtyard to look around. No game controls needed.</span>
+      </div>
+      <p class="fort-feedback" id="fort-feedback" role="status" aria-live="polite"></p>
+      <div class="fort-labels" id="fort-labels" aria-hidden="true"></div>
+      <aside class="fort-detail" id="fort-detail" aria-labelledby="fort-detail-title" hidden>
+        <button class="fort-back" id="fort-back">← Back to courtyard</button>
+        <p class="eyebrow" id="fort-detail-number"></p>
+        <h3 id="fort-detail-title" tabindex="-1"></h3>
+        <p class="fort-detail-date" id="fort-detail-date"></p>
+        <p class="fort-detail-time" id="fort-detail-time"></p>
+        <div class="detail-rule"></div>
+        <h4>Where we gather</h4><p id="fort-detail-venue"></p><p id="fort-detail-address"></p>
+        <a id="fort-detail-map" target="_blank" rel="noopener noreferrer">Open venue in Maps ↗</a>
+        <h4>How to reach</h4><p id="fort-detail-directions"></p>
+        <h4>Dress code</h4><p id="fort-detail-dress"></p>
+        <p id="fort-detail-description" hidden></p>
+        <div class="fort-step"><button id="fort-previous" class="fort-button">← Previous</button><button id="fort-next" class="fort-button">Next celebration →</button></div>
+      </aside>
+      <div class="fort-navigation">
+        <nav id="fort-events" aria-label="Explore wedding event pavilions"></nav>
+        <p class="fort-disclaimer">An imagined wedding fort. Artistic event spaces, not models of the actual venues.</p>
+      </div>
+    </div>
   </section>
   <div id="site">
     <div class="demo-banner" id="demo-banner">✧ A little inspiration, for now. All wedding details below are samples.</div>
     <header class="site-header">
       <a class="brand" href="#home" aria-label="Wedding home"><span class="brand-icon" aria-hidden="true">❋</span><span id="brand-name">AZADERA</span></a>
-      <nav aria-label="Main navigation"><a href="#story">Our story</a><a href="#celebrations">The celebrations</a><a href="#people">The couple</a><a href="#location">Getting there</a></nav>
+      <nav aria-label="Main navigation"><a href="#story">Our story</a><a href="#celebrations">The celebrations</a><a href="#people">The couple</a><a href="#family">Our families</a><a href="#location">Getting there</a></nav>
       <a class="header-cta" href="#celebrations">You're invited <span aria-hidden="true">↗</span></a>
     </header>
     <main id="main">
@@ -47,6 +88,7 @@
           <div class="hero-date"><span aria-hidden="true"></span><time id="wedding-date"></time><span aria-hidden="true"></span></div>
           <p class="hero-place" id="hero-place"></p>
           <a class="button" href="#celebrations">Join our celebration <span aria-hidden="true">↗</span></a>
+          <button class="text-button explore-fort" id="explore-fort">Explore our 3D wedding fort <span aria-hidden="true">✧</span></button>
           <p class="hero-note">Two families, countless blessings, one forever.</p>
         </div>
         <div class="hero-art">
@@ -70,6 +112,12 @@
       </section>
       <section class="people section-shell" id="people" aria-labelledby="people-title">
         <p class="eyebrow">The people behind the “I do”</p><h2 id="people-title">A perfect match.<br><em>In our own imperfect way.</em></h2><div class="couple-grid" id="couple-grid"></div>
+      </section>
+      <section class="family section-shell" id="family" aria-labelledby="family-title">
+        <p class="eyebrow">The love that brought us here</p>
+        <h2 id="family-title">Two families.<br><em>One beautiful circle.</em></h2>
+        <p class="family-intro">Meet the people who make this celebration feel like home.</p>
+        <div class="family-groups" id="family-groups"></div>
       </section>
       <section class="location section-shell" id="location" aria-labelledby="location-title">
         <div class="location-illustration" aria-hidden="true">
