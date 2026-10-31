@@ -52,10 +52,10 @@ window.WEDDING_CONFIG = {
   ],
   events: [
     { name: "Roka", date: "2027-12-09", time: "11:00 AM", venueId: "courtyard", icon: "flower", tone: "rose", subtitle: "Where our families become one", description: "Blessings, happy tears, and the beginning of a beautiful bond.", dressCode: "Festive Indian" },
-    { name: "Ring ceremony", date: "2027-12-09", time: "6:00 PM", venueId: "courtyard", icon: "rings", tone: "sand", subtitle: "A little sparkle. A big promise.", description: "An evening to exchange rings and celebrate our forever.", dressCode: "Elegant evening wear" },
-    { name: "Mehendi", date: "2027-12-10", time: "3:00 PM", venueId: "courtyard", icon: "leaf", tone: "sage", subtitle: "Love, written in henna", description: "Intricate patterns, favourite songs, and stories over chai.", dressCode: "Shades of green" },
-    { name: "Haldi", date: "2027-12-11", time: "10:00 AM", venueId: "courtyard", icon: "sun", tone: "yellow", subtitle: "A little sunshine, a lot of laughter", description: "A joyful morning of turmeric, flowers, and playful blessings.", dressCode: "A splash of yellow" },
-    { name: "Sangeet", date: "2027-12-11", time: "7:00 PM", venueId: "courtyard", icon: "music", tone: "lavender", subtitle: "Two families. One dance floor.", description: "Bring your best moves. We'll bring the music and the memories.", dressCode: "Ready to sparkle" },
+    { name: "Ring ceremony", date: "2027-12-09", time: "6:00 PM", venueId: "courtyard1", icon: "rings", tone: "sand", subtitle: "A little sparkle. A big promise.", description: "An evening to exchange rings and celebrate our forever.", dressCode: "Elegant evening wear" },
+    { name: "Mehendi", date: "2027-12-10", time: "3:00 PM", venueId: "courtyard2", icon: "leaf", tone: "sage", subtitle: "Love, written in henna", description: "Intricate patterns, favourite songs, and stories over chai.", dressCode: "Shades of green" },
+    { name: "Haldi", date: "2027-12-11", time: "10:00 AM", venueId: "courtyard3", icon: "sun", tone: "yellow", subtitle: "A little sunshine, a lot of laughter", description: "A joyful morning of turmeric, flowers, and playful blessings.", dressCode: "A splash of yellow" },
+    { name: "Sangeet", date: "2027-12-11", time: "7:00 PM", venueId: "courtyard4", icon: "music", tone: "lavender", subtitle: "Two families. One dance floor.", description: "Bring your best moves. We'll bring the music and the memories.", dressCode: "Ready to sparkle" },
     { name: "The wedding", date: "2027-12-12", time: "10:30 AM", venueId: "garden", icon: "lamp", tone: "peach", subtitle: "Two traditions, one sacred promise", description: "Kerala grace meets North Indian warmth as we begin our next chapter.", dressCode: "Traditional Indian · ivory & gold welcome" }
   ],
   travel: {
