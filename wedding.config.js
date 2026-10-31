@@ -39,7 +39,7 @@ window.WEDDING_CONFIG = {
     effects: true
   },
   // User supplied this recording and confirmed permission for public redistribution.
-  // Playback starts with the explicit "Open the gates" / explore gesture, never before.
+  // Audible autoplay is attempted; mobile browsers may require the visitor's first tap.
   music: {
     src: "./assets/kalyani-remix.mp3",
     title: "Kalyani (Remix)",

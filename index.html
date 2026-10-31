@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#faf6ee">
   <meta name="description" content="A celebration of two hearts, two traditions, and one beautiful beginning.">
   <title>Azadera · A wedding celebration</title>
@@ -35,8 +35,6 @@
         <div><p class="eyebrow">An invitation to another world</p><h2 id="fort-title" tabindex="-1">The celebration courtyard</h2></div>
         <div class="fort-controls">
           <button class="fort-button fort-accessible" id="leave-fort">Accessible text version ↗</button>
-          <button class="fort-button" id="music-toggle" aria-pressed="false">Sound on</button>
-          <p id="music-status" class="music-status" role="status" hidden></p>
           <label class="fort-effects"><input type="checkbox" id="fort-effects" checked> Celebration effects</label>
         </div>
       </header>
@@ -45,6 +43,7 @@
         <button class="fort-button" id="fort-tour">Begin the celebration tour →</button>
         <button class="fort-button" id="fort-story">Discover our story</button>
         <button class="fort-button" id="fort-family">Meet our families</button>
+        <button class="fort-button" id="fort-people">Meet the couple</button>
         <div class="fort-view-controls" aria-label="Courtyard camera controls">
           <button class="fort-button" id="fort-look-left" aria-label="Look left around courtyard">←</button>
           <button class="fort-button" id="fort-recenter">Recenter view</button>
@@ -55,6 +54,8 @@
       <div class="doli-controls" id="doli-controls" aria-label="Carry the doli">
         <p id="doli-prompt" role="status">Carry the doli towards a celebration.</p>
         <span class="doli-instructions">Arrow keys / WASD, or hold the arrows below.</span>
+        <span class="doli-tap-instructions">Tap a celebration below. Your doli takes you there.</span>
+        <button class="fort-button" id="doli-stop" hidden>Stop journey</button>
         <button class="fort-button" id="doli-interact" disabled>Discover nearby space · Enter</button>
         <div class="doli-pad">
           <button data-drive="forward" aria-label="Carry doli forward">↑</button>
@@ -93,6 +94,7 @@
       </div>
     </div>
   </section>
+  <p id="music-status" class="music-status" role="status" hidden></p>
   <div id="site">
     <div class="demo-banner" id="demo-banner">✧ A little inspiration, for now. All wedding details below are samples.</div>
     <header class="site-header">

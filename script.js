@@ -2,6 +2,60 @@
   "use strict";
   const config = window.WEDDING_CONFIG;
   const byId = id => document.getElementById(id);
+  const audio = new Audio();
+  audio.preload = "auto";
+  audio.loop = true;
+  const musicAllowed = config?.music?.enabled !== false;
+  let audioValid = false;
+  let playPending = false;
+  const playbackError = message => {
+    byId("music-status").textContent = message;
+    byId("music-status").hidden = false;
+  };
+  try {
+    if (config?.music?.src) {
+      const url = new URL(config.music.src, document.baseURI);
+      if (!["http:", "https:"].includes(url.protocol)) throw new Error("Music must be a local path or HTTPS URL.");
+      audio.src = url.href;
+      audio.volume = Number.isFinite(config.music.volume) ? Math.min(1, Math.max(0, config.music.volume)) : 0.35;
+      audioValid = true;
+    }
+  } catch (error) {
+    console.error("Wedding music configuration:", error);
+    playbackError(error.message);
+  }
+  audio.addEventListener("error", () => {
+    console.warn("Wedding music asset failed:", audio.error?.code);
+    playbackError("Music could not load. We will retry on your next tap. You can keep exploring.");
+  });
+  audio.addEventListener("playing", () => { byId("music-status").hidden = true; });
+  function playMusic() {
+    if (!audioValid || !musicAllowed || audio.volume === 0 || (!audio.paused && !playPending && !audio.error)) return;
+    if (audio.error) audio.load();
+    // Register before showing the gates; never await Three.js or media loading in a gesture.
+    const pending = audio.play();
+    playPending = true;
+    pending.catch(error => {
+      if (error.name === "AbortError") return;
+      if (error.name === "NotAllowedError") {
+        playbackError("Tap anywhere to start the wedding music.");
+        return;
+      }
+      console.warn("Wedding music playback:", error);
+      playbackError("Music could not start. We will retry on your next tap. You can keep exploring.");
+    }).finally(() => { playPending = false; });
+  }
+  for (const type of ["pointerdown", "touchstart", "click", "keydown"]) {
+    document.addEventListener(type, playMusic, { capture: true, passive: true });
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && !playPending) playMusic();
+  });
+  window.addEventListener("pageshow", playMusic);
+  window.WEDDING_MUSIC = {
+    getState: () => ({ paused: audio.paused, time: audio.currentTime, volume: audio.volume, error: audio.error?.code || null })
+  };
+  playMusic();
   const setText = (id, value) => { byId(id).textContent = value; };
   const element = (tag, className, text) => {
     const node = document.createElement(tag);

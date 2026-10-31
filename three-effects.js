@@ -2,6 +2,8 @@ const entrance = document.getElementById("entrance");
 const config = window.WEDDING_CONFIG;
 const ui = document.getElementById("fort-ui");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const touchTravel = window.matchMedia("(pointer: coarse)");
+const easyTravel = () => touchTravel.matches || window.innerWidth <= 700;
 const byId = id => document.getElementById(id);
 const events = config?.events || [];
 let selected = null;
@@ -53,7 +55,7 @@ events.forEach((event, index) => {
   const name = document.createElement("span");
   name.textContent = event.name;
   button.append(number, name);
-  button.addEventListener("click", () => selectEvent(index));
+  button.addEventListener("click", () => travelTo({ index }));
   byId("fort-events").append(button);
 });
 function updateNavigation() {
@@ -93,6 +95,13 @@ function selectEvent(index) {
   byId("fort-memory").hidden = true;
   showDetails(index);
   engine?.visit(index);
+}
+function travelTo(destination) {
+  if (easyTravel() && engine && entrance.classList.contains("three-ready") && !reducedMotion.matches) {
+    if (selected !== null || memory !== null) back();
+    engine.travel(destination);
+  } else if (destination.section) discover(destination.section);
+  else selectEvent(destination.index);
 }
 function back() {
   const previous = selected;
@@ -144,7 +153,7 @@ byId("leave-fort").addEventListener("click", () => byId("skip-entrance").click()
 byId("fort-back").addEventListener("click", back);
 byId("fort-previous").addEventListener("click", () => selectEvent((selected - 1 + events.length) % events.length));
 byId("fort-next").addEventListener("click", () => selectEvent((selected + 1) % events.length));
-byId("fort-tour").addEventListener("click", () => selectEvent(0));
+byId("fort-tour").addEventListener("click", () => travelTo({ index: 0 }));
 function discover(section) {
   memory = section;
   memoryPage = 0;
@@ -163,8 +172,10 @@ function discover(section) {
   byId("fort-memory-title").focus({ preventScroll: true });
   engine?.memory(section);
 }
-byId("fort-story").addEventListener("click", () => discover("story"));
-byId("fort-family").addEventListener("click", () => discover("family"));
+byId("fort-story").addEventListener("click", () => travelTo({ section: "story" }));
+byId("fort-family").addEventListener("click", () => travelTo({ section: "family" }));
+byId("fort-people").addEventListener("click", () => travelTo({ section: "people" }));
+byId("doli-stop").addEventListener("click", () => engine?.stopTravel());
 byId("memory-back").addEventListener("click", back);
 byId("memory-next").addEventListener("click", () => engine?.page(1));
 byId("memory-previous").addEventListener("click", () => engine?.page(-1));
@@ -176,62 +187,9 @@ byId("fort-recenter").addEventListener("click", () => engine?.courtyard());
 window.WEDDING_EXPERIENCE = {
   enter, reset, back,
   isInsideEvent: () => selected !== null || memory !== null,
-  getState: () => ({ selected, memory, eventCount: events.length, effectsEnabled, ready: entrance.classList.contains("three-ready"), audio: { paused: audio.paused, time: audio.currentTime, volume: audio.volume, error: audio.error?.code || null }, ...engine?.stats() })
+  getState: () => ({ selected, memory, eventCount: events.length, effectsEnabled, ready: entrance.classList.contains("three-ready"), audio: window.WEDDING_MUSIC?.getState(), ...engine?.stats() })
 };
 window.dispatchEvent(new Event("wedding:experience-ready"));
-
-const audio = new Audio();
-audio.preload = "none";
-audio.loop = true;
-let musicAllowed = config?.music?.enabled !== false;
-let audioValid = false;
-const playbackError = message => {
-  byId("music-status").textContent = message;
-  byId("music-status").hidden = false;
-  byId("music-toggle").textContent = "Retry wedding music";
-};
-try {
-  if (config?.music?.src) {
-    const url = new URL(config.music.src, document.baseURI);
-    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Music must be a local path or HTTPS URL.");
-    audio.src = url.href;
-    audio.volume = Number.isFinite(config.music.volume) ? Math.min(1, Math.max(0, config.music.volume)) : 0.35;
-    audioValid = true;
-  }
-} catch (error) {
-  console.error("Wedding music configuration:", error);
-  playbackError(error.message);
-}
-byId("music-toggle").disabled = !audioValid;
-audio.addEventListener("error", () => {
-  console.warn("Wedding music asset failed:", audio.error?.code);
-  playbackError("Music could not load. Check the audio path in wedding.config.js, or retry.");
-});
-audio.addEventListener("playing", () => {
-  byId("music-status").hidden = true;
-  byId("music-toggle").textContent = "Sound off";
-  byId("music-toggle").setAttribute("aria-pressed", "true");
-});
-audio.addEventListener("pause", () => { byId("music-toggle").textContent = "Sound on"; byId("music-toggle").setAttribute("aria-pressed", "false"); });
-function playMusic() {
-  if (!audioValid || !musicAllowed || audio.volume === 0) return;
-  if (audio.error) audio.load();
-  // Invoke play synchronously in the visitor's gesture; scene loading never gates playback.
-  const pending = audio.play();
-  pending.catch(error => {
-    if (error.name === "AbortError") return; // A visitor pause/mute can cancel an in-flight play.
-    console.warn("Wedding music playback:", error);
-    playbackError("Music could not start. Tap Retry wedding music to try again.");
-  });
-}
-byId("open-gates").addEventListener("click", playMusic);
-byId("explore-fort").addEventListener("click", playMusic);
-window.addEventListener("wedding:explore", playMusic);
-byId("music-toggle").addEventListener("click", () => {
-  if (!audio.paused && !audio.error) { musicAllowed = false; audio.pause(); }
-  else { musicAllowed = true; if (audio.volume === 0) audio.volume = 0.35; playMusic(); }
-});
-document.addEventListener("visibilitychange", () => { if (document.hidden) audio.pause(); });
 
 async function initialize() {
   if (initializing || unavailable || engine || !events.length) return;
@@ -246,7 +204,7 @@ async function initialize() {
     const canvas = document.createElement("canvas");
     canvas.className = "three-canvas";
     canvas.setAttribute("aria-hidden", "true");
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
+    const mobile = easyTravel();
     renderer = new THREE.WebGLRenderer({ canvas, alpha: false, antialias: !mobile, powerPreference: "low-power" });
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mobile ? 1 : 1.5));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -669,7 +627,7 @@ async function initialize() {
       const plaque = document.createElement("span");
       plaque.className = "fort-world-label";
       plaque.textContent = section === "story" ? "Our story garden" : section === "family" ? "Family haveli" : "Meet the couple";
-      plaque.addEventListener("click", () => discover(section));
+      plaque.addEventListener("click", () => travelTo({ section }));
       byId("fort-labels").append(plaque);
       locations.push({ label: new THREE.Vector3(x, 5, -21) });
       labelNodes.push(plaque);
@@ -766,6 +724,7 @@ async function initialize() {
     let heading = 0;
     let driving = false;
     let nearby = null;
+    let journey = null;
     const obstacles = [{ x: 0, z: -4, radius: 4.1 }];
     for (let z = -19; z <= 14; z += 3) for (const x of [-4, 4]) obstacles.push({ x, z, radius: 0.55 });
     const navigationTargets = [
@@ -776,6 +735,59 @@ async function initialize() {
       return x >= -7.3 && x <= 7.3 && z >= -18.5 && z <= 12 &&
         obstacles.every(o => Math.hypot(x - o.x, z - o.z) >= o.radius);
     }
+    function clearPath(from, to) {
+      const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / 0.1));
+      for (let i = 1; i <= steps; i++) {
+        if (!canMove(from.x + (to.x - from.x) * i / steps, from.z + (to.z - from.z) * i / steps)) return false;
+      }
+      return true;
+    }
+    // A small bounded courtyard grid routes around the pool and lamps, then smooths clear segments.
+    function pathTo(destination) {
+      const nodes = [];
+      for (let z = -18; z <= 12; z += 0.5) for (let x = -7; x <= 7; x += 0.5) {
+        if (canMove(x, z)) nodes.push({ x, z });
+      }
+      const nearestNode = (point, visible = false) => nodes.reduce((best, node) => {
+        if (visible && !clearPath(point, node)) return best;
+        return !best || Math.hypot(node.x - point.x, node.z - point.z) < Math.hypot(best.x - point.x, best.z - point.z) ? node : best;
+      }, null);
+      const source = nearestNode(doli.position, true);
+      const target = nearestNode(destination);
+      if (!source || !target) return null;
+      const key = node => `${node.x},${node.z}`;
+      const grid = new Map(nodes.map(node => [key(node), node]));
+      const queue = [source];
+      const previous = new Map([[key(source), null]]);
+      for (let i = 0; i < queue.length && !previous.has(key(target)); i++) {
+        const from = queue[i];
+        for (const [dx, dz] of [[0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]]) {
+          const next = grid.get(`${from.x + dx},${from.z + dz}`);
+          if (next && !previous.has(key(next)) && clearPath(from, next)) {
+            previous.set(key(next), from);
+            queue.push(next);
+          }
+        }
+      }
+      if (!previous.has(key(target))) return null;
+      const path = [];
+      for (let node = target; node; node = previous.get(key(node))) path.unshift(node);
+      const smooth = [];
+      let from = doli.position;
+      for (let i = 0; i < path.length;) {
+        let last = i;
+        while (last + 1 < path.length && clearPath(from, path[last + 1])) last++;
+        smooth.push(path[last]);
+        from = path[last];
+        i = last + 1;
+      }
+      return smooth;
+    }
+    function stopTravel() {
+      journey = null;
+      byId("doli-stop").hidden = true;
+      byId("doli-prompt").textContent = easyTravel() ? "Tap a celebration below. Your doli takes you there." : "Carry the doli towards a celebration. Arrow keys / WASD.";
+    }
     function proximity() {
       let nearest = null;
       let distance = 3;
@@ -783,7 +795,7 @@ async function initialize() {
         const candidate = Math.hypot(place.x - doli.position.x, place.z - doli.position.z);
         if (candidate < distance) { nearest = place; distance = candidate; }
       }
-      if (nearby !== nearest) {
+      if (nearby !== nearest && !journey) {
         nearby = nearest;
         byId("doli-prompt").textContent = nearby ? `${nearby.name} is nearby. Press Enter or Discover.` : "Carry the doli towards a celebration. Arrow keys / WASD.";
         byId("doli-interact").disabled = !nearby;
@@ -791,15 +803,36 @@ async function initialize() {
     }
     function carry(dt) {
       if (!driving || selected !== null || memory !== null || transition) return;
-      const turn = (held.has("left") ? 1 : 0) - (held.has("right") ? 1 : 0);
-      const speed = (held.has("forward") ? 1 : 0) - (held.has("backward") ? 1 : 0);
-      heading += turn * dt * 1.9;
-      const x = doli.position.x + Math.sin(heading) * speed * dt * 4;
-      const z = doli.position.z - Math.cos(heading) * speed * dt * 4;
-      if (canMove(x, z)) doli.position.set(x, 0.25, z);
-      else {
-        if (canMove(x, doli.position.z)) doli.position.x = x;
-        if (canMove(doli.position.x, z)) doli.position.z = z;
+      if (journey) {
+        const next = journey.path[0];
+        const dx = next.x - doli.position.x;
+        const dz = next.z - doli.position.z;
+        const distance = Math.hypot(dx, dz);
+        const step = Math.min(distance, dt * 7);
+        if (distance > 0) {
+          heading = Math.atan2(dx, -dz);
+          doli.position.x += dx / distance * step;
+          doli.position.z += dz / distance * step;
+        }
+        if (distance <= step + 0.001) journey.path.shift();
+        if (!journey.path.length) {
+          const destination = journey.destination;
+          stopTravel();
+          if (destination.section) discover(destination.section);
+          else selectEvent(destination.index);
+          return;
+        }
+      } else {
+        const turn = (held.has("left") ? 1 : 0) - (held.has("right") ? 1 : 0);
+        const speed = (held.has("forward") ? 1 : 0) - (held.has("backward") ? 1 : 0);
+        heading += turn * dt * 1.9;
+        const x = doli.position.x + Math.sin(heading) * speed * dt * 4;
+        const z = doli.position.z - Math.cos(heading) * speed * dt * 4;
+        if (canMove(x, z)) doli.position.set(x, 0.25, z);
+        else {
+          if (canMove(x, doli.position.z)) doli.position.x = x;
+          if (canMove(doli.position.x, z)) doli.position.z = z;
+        }
       }
       doli.rotation.y = -heading;
       proximity();
@@ -812,7 +845,7 @@ async function initialize() {
     const keyHandler = (event, down) => {
       if (entrance.hidden || !driving || selected !== null || memory !== null || event.target.matches("input,textarea,select")) return;
       const direction = keys[event.key];
-      if (direction) { event.preventDefault(); if (down) held.add(direction); else held.delete(direction); start(); }
+      if (direction) { event.preventDefault(); if (down) { stopTravel(); held.add(direction); } else held.delete(direction); start(); }
       if (down && event.key === "Enter" && !event.target.closest("button,a,input")) { event.preventDefault(); engine.interact(); }
     };
     document.addEventListener("keydown", event => keyHandler(event, true));
@@ -961,15 +994,16 @@ async function initialize() {
       renderer.setViewport(0, 0, width, height);
       renderer.clear();
       if ((selected !== null || memory !== null) && entrance.classList.contains("is-exploring")) {
-        const viewportWidth = width < 700 ? width : width * 0.62;
-        const viewportHeight = width < 700 ? height * 0.48 : height;
+        const portraitPhone = width < 700 && height > width;
+        const viewportWidth = portraitPhone ? width : width * 0.62;
+        const viewportHeight = portraitPhone ? height * 0.48 : height;
         renderer.setViewport(0, height - viewportHeight, viewportWidth, viewportHeight);
         camera.aspect = viewportWidth / viewportHeight;
       } else camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
       entrance.classList.add("three-ready");
-      if (!reducedMotion.matches || transition || held.size) animation = requestAnimationFrame(render);
+      if (!reducedMotion.matches || transition || held.size || journey) animation = requestAnimationFrame(render);
     }
     function start() {
       if (animation || entrance.hidden || contextLost || document.hidden || suspended) return;
@@ -988,6 +1022,7 @@ async function initialize() {
           () => move(view.position, view.target, 1800));
       },
       visit(index) {
+        stopTravel();
         held.clear();
         driving = false;
         resize();
@@ -1004,10 +1039,12 @@ async function initialize() {
         move(position, place.target.clone(), 1500);
       },
       courtyard() {
+        stopTravel();
         driving = true; doli.visible = true; held.clear(); orbitAngle = 0; roomLight.intensity = 0; shower.visible = false; splash.visible = false;
         move(doli.position.clone().add(new THREE.Vector3(0, 10, 6)), doli.position.clone().add(new THREE.Vector3(0, 1, -3)));
       },
       memory(section) {
+        stopTravel();
         driving = false;
         held.clear();
         roomLight.intensity = 0;
@@ -1027,6 +1064,29 @@ async function initialize() {
         if (nearby.section) discover(nearby.section);
         else selectEvent(nearby.index);
       },
+      travel(destination) {
+        const place = navigationTargets.find(target => destination.section ? target.section === destination.section : target.index === destination.index);
+        if (!place) return;
+        if (contextLost || reducedMotion.matches) {
+          if (place.section) discover(place.section);
+          else selectEvent(place.index);
+          return;
+        }
+        const path = pathTo(place);
+        if (!path) {
+          setStatus("Doli route unavailable. Opening the destination directly.");
+          if (place.section) discover(place.section);
+          else selectEvent(place.index);
+          return;
+        }
+        held.clear();
+        driving = true;
+        journey = { path, destination: place };
+        byId("doli-prompt").textContent = `Your doli is taking you to ${place.name}…`;
+        byId("doli-stop").hidden = false;
+        start();
+      },
+      stopTravel,
       recover() {
         doli.position.set(0, 0.25, 12); heading = 0; held.clear(); proximity(); this.courtyard();
       },
@@ -1038,6 +1098,7 @@ async function initialize() {
         move(offset.add(view.target), view.target, 300);
       },
       reset() {
+        stopTravel();
         transition = null;
         doorAngle = 0;
         driving = false;
@@ -1054,7 +1115,7 @@ async function initialize() {
         start();
       },
       stats() {
-        return { drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), transitioning: !!transition, camera: camera.position.toArray(), orbitAngle, effect: effectKind, particlesVisible: shower.visible, particleLimit: particleCount, doli: doli.position.toArray(), heading, driving, nearby: nearby?.name || null, memoryPage, visibleMemoryPlaque: memory ? memoryBoards[memory].findIndex(plaque => plaque.visible) : null, spatialPlaques: spatialBoards.length };
+        return { drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), transitioning: !!transition, camera: camera.position.toArray(), orbitAngle, effect: effectKind, particlesVisible: shower.visible, particleLimit: particleCount, doli: doli.position.toArray(), heading, driving, journey: journey?.destination.name || null, nearby: nearby?.name || null, memoryPage, visibleMemoryPlaque: memory ? memoryBoards[memory].findIndex(plaque => plaque.visible) : null, spatialPlaques: spatialBoards.length };
       },
       effects(enabled) {
         if (!enabled) { shower.visible = false; splash.visible = false; }
@@ -1071,11 +1132,11 @@ async function initialize() {
       pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(hitTargets)[0];
-      if (hit) selectEvent(hit.object.userData.eventIndex);
+      if (hit) travelTo({ index: hit.object.userData.eventIndex });
     });
     canvas.addEventListener("pointermove", event => {
       if (!entrance.classList.contains("is-exploring") || selected !== null) return;
-      if (pointerDown && event.buttons && !reducedMotion.matches) {
+      if (pointerDown && event.buttons && !reducedMotion.matches && !easyTravel()) {
         const delta = event.clientX - pointerDown.lastX;
         pointerDown.lastX = event.clientX;
         if (Math.abs(event.clientX - pointerDown.x) > 12) engine.orbit(-delta * 0.003);
@@ -1107,12 +1168,18 @@ async function initialize() {
       if (!entrance.hidden && entrance.classList.contains("is-exploring")) {
         if (memory !== null) engine.memory(memory);
         else if (selected !== null) engine.visit(selected);
-        else engine.courtyard();
+        else if (!journey) engine.courtyard();
       }
       start();
     });
     document.addEventListener("visibilitychange", () => { held.clear(); start(); });
     reducedMotion.addEventListener("change", () => {
+      if (reducedMotion.matches && journey) {
+        const destination = journey.destination;
+        stopTravel();
+        if (destination.section) discover(destination.section);
+        else selectEvent(destination.index);
+      }
       if (reducedMotion.matches && transition) {
         camera.position.copy(transition.to);
         look.copy(transition.lookTo);
