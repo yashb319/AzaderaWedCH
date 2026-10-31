@@ -34,11 +34,13 @@
       <header class="fort-toolbar">
         <div><p class="eyebrow">An invitation to another world</p><h2 id="fort-title" tabindex="-1">The celebration courtyard</h2></div>
         <div class="fort-controls">
-          <button class="fort-button" id="leave-fort">Read the invitation <span aria-hidden="true">↗</span></button>
+          <button class="fort-button fort-accessible" id="leave-fort">Accessible text version ↗</button>
+          <button class="fort-button" id="music-toggle" aria-pressed="false">Sound on</button>
+          <p id="music-status" class="music-status" role="status" hidden></p>
           <label class="fort-effects"><input type="checkbox" id="fort-effects" checked> Celebration effects</label>
         </div>
       </header>
-      <p class="fort-intro" id="fort-intro">Eight celebrations. Eight doors to explore. Choose a pavilion below or tap one in the courtyard.</p>
+      <p class="fort-intro" id="fort-intro">Your doli awaits. Steer through the courtyard and approach a pavilion to discover its celebration.</p>
       <div class="fort-discovery" id="fort-discovery">
         <button class="fort-button" id="fort-tour">Begin the celebration tour →</button>
         <button class="fort-button" id="fort-story">Discover our story</button>
@@ -48,7 +50,19 @@
           <button class="fort-button" id="fort-recenter">Recenter view</button>
           <button class="fort-button" id="fort-look-right" aria-label="Look right around courtyard">→</button>
         </div>
-        <span class="fort-drag-hint">Drag the courtyard to look around. No game controls needed.</span>
+        <span class="fort-drag-hint">Arrow keys / WASD to carry the doli. Enter to discover. Or choose any destination.</span>
+      </div>
+      <div class="doli-controls" id="doli-controls" aria-label="Carry the doli">
+        <p id="doli-prompt" role="status">Carry the doli towards a celebration.</p>
+        <span class="doli-instructions">Arrow keys / WASD, or hold the arrows below.</span>
+        <button class="fort-button" id="doli-interact" disabled>Discover nearby space · Enter</button>
+        <div class="doli-pad">
+          <button data-drive="forward" aria-label="Carry doli forward">↑</button>
+          <button data-drive="left" aria-label="Turn doli left">←</button>
+          <button data-drive="backward" aria-label="Carry doli backward">↓</button>
+          <button data-drive="right" aria-label="Turn doli right">→</button>
+        </div>
+        <button class="fort-button" id="doli-recover">Return doli to entrance</button>
       </div>
       <p class="fort-feedback" id="fort-feedback" role="status" aria-live="polite"></p>
       <div class="fort-labels" id="fort-labels" aria-hidden="true"></div>
@@ -65,6 +79,13 @@
         <h4>Dress code</h4><p id="fort-detail-dress"></p>
         <p id="fort-detail-description" hidden></p>
         <div class="fort-step"><button id="fort-previous" class="fort-button">← Previous</button><button id="fort-next" class="fort-button">Next celebration →</button></div>
+      </aside>
+      <aside class="fort-detail fort-memory" id="fort-memory" aria-labelledby="fort-memory-title" hidden>
+        <button class="fort-back" id="memory-back">← Return to the doli</button>
+        <p class="eyebrow">A little closer to our hearts</p>
+        <h3 id="fort-memory-title" tabindex="-1"></h3>
+        <div class="fort-step"><button class="fort-button" id="memory-previous">← Previous plaque</button><button class="fort-button" id="memory-next">Next plaque →</button></div>
+        <div id="fort-memory-content"></div>
       </aside>
       <div class="fort-navigation">
         <nav id="fort-events" aria-label="Explore wedding event pavilions"></nav>

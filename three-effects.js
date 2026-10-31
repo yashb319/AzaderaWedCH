@@ -5,6 +5,8 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const byId = id => document.getElementById(id);
 const events = config?.events || [];
 let selected = null;
+let memory = null;
+let memoryPage = 0;
 let engine;
 let initializing = false;
 let unavailable = false;
@@ -34,7 +36,10 @@ function themeFor(event) {
   if (name.includes("kerala") || name.includes("kerela")) return "kerala-marriage";
   return "hapur-marriage";
 }
-const setStatus = text => { byId("fort-feedback").textContent = text; };
+const setStatus = text => {
+  byId("fort-feedback").textContent = text;
+  byId("fort-feedback").classList.toggle("is-warning", /paused|unavailable|Illustrated mode/i.test(text));
+};
 const dateLabel = date => new Intl.DateTimeFormat(config.locale, {
   day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
 }).format(new Date(`${date}T12:00:00Z`));
@@ -84,12 +89,16 @@ function showDetails(index) {
 function selectEvent(index) {
   if (!Number.isInteger(index) || index < 0 || index >= events.length) return;
   selected = index;
+  memory = null;
+  byId("fort-memory").hidden = true;
   showDetails(index);
   engine?.visit(index);
 }
 function back() {
   const previous = selected;
   selected = null;
+  memory = null;
+  byId("fort-memory").hidden = true;
   byId("fort-detail").hidden = true;
   entrance.classList.remove("is-in-event");
   delete entrance.dataset.theme;
@@ -102,6 +111,8 @@ function back() {
 function reset() {
   experienceVersion++;
   selected = null;
+  memory = null;
+  byId("fort-memory").hidden = true;
   ui.hidden = true;
   byId("fort-detail").hidden = true;
   entrance.classList.remove("is-exploring", "is-in-event");
@@ -122,7 +133,8 @@ async function enter(index) {
   if (!engine && !unavailable) await initialize();
   if (version !== experienceVersion || entrance.hidden) return;
   if (engine) {
-    if (selected !== null) engine.visit(selected);
+    if (memory !== null) engine.memory(memory);
+    else if (selected !== null) engine.visit(selected);
     else engine.enter();
   } else {
     setStatus("Illustrated mode. Choose any celebration below to read its details.");
@@ -134,24 +146,92 @@ byId("fort-previous").addEventListener("click", () => selectEvent((selected - 1 
 byId("fort-next").addEventListener("click", () => selectEvent((selected + 1) % events.length));
 byId("fort-tour").addEventListener("click", () => selectEvent(0));
 function discover(section) {
-  byId("skip-entrance").click();
-  const destination = document.getElementById(section);
-  destination.scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth" });
-  const heading = destination.querySelector("h2");
-  heading.setAttribute("tabindex", "-1");
-  heading.focus({ preventScroll: true });
+  memory = section;
+  memoryPage = 0;
+  selected = null;
+  updateNavigation();
+  byId("fort-detail").hidden = true;
+  entrance.classList.add("is-in-event");
+  byId("fort-intro").hidden = true;
+  byId("fort-memory").hidden = false;
+  byId("fort-memory-title").textContent = section === "story" ? "The garden of our story" : section === "people" ? `Meet ${config.couple.bride.firstName} & ${config.couple.groom.firstName}` : "The family haveli";
+  const source = document.querySelector(section === "story" ? "#story-timeline" : section === "people" ? "#couple-grid" : "#family-groups");
+  const clone = source.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+  byId("fort-memory-content").replaceChildren(clone);
+  byId("fort-memory-title").focus({ preventScroll: true });
+  engine?.memory(section);
 }
 byId("fort-story").addEventListener("click", () => discover("story"));
 byId("fort-family").addEventListener("click", () => discover("family"));
+byId("memory-back").addEventListener("click", back);
+byId("memory-next").addEventListener("click", () => engine?.page(1));
+byId("memory-previous").addEventListener("click", () => engine?.page(-1));
+byId("doli-recover").addEventListener("click", () => { back(); engine?.recover(); });
+byId("doli-interact").addEventListener("click", () => engine?.interact());
 byId("fort-look-left").addEventListener("click", () => engine?.orbit(-0.15));
 byId("fort-look-right").addEventListener("click", () => engine?.orbit(0.15));
 byId("fort-recenter").addEventListener("click", () => engine?.courtyard());
 window.WEDDING_EXPERIENCE = {
   enter, reset, back,
-  isInsideEvent: () => selected !== null,
-  getState: () => ({ selected, eventCount: events.length, effectsEnabled, ready: entrance.classList.contains("three-ready"), ...engine?.stats() })
+  isInsideEvent: () => selected !== null || memory !== null,
+  getState: () => ({ selected, memory, eventCount: events.length, effectsEnabled, ready: entrance.classList.contains("three-ready"), audio: { paused: audio.paused, time: audio.currentTime, volume: audio.volume, error: audio.error?.code || null }, ...engine?.stats() })
 };
 window.dispatchEvent(new Event("wedding:experience-ready"));
+
+const audio = new Audio();
+audio.preload = "none";
+audio.loop = true;
+let musicAllowed = config?.music?.enabled !== false;
+let audioValid = false;
+const playbackError = message => {
+  byId("music-status").textContent = message;
+  byId("music-status").hidden = false;
+  byId("music-toggle").textContent = "Retry wedding music";
+};
+try {
+  if (config?.music?.src) {
+    const url = new URL(config.music.src, document.baseURI);
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Music must be a local path or HTTPS URL.");
+    audio.src = url.href;
+    audio.volume = Number.isFinite(config.music.volume) ? Math.min(1, Math.max(0, config.music.volume)) : 0.35;
+    audioValid = true;
+  }
+} catch (error) {
+  console.error("Wedding music configuration:", error);
+  playbackError(error.message);
+}
+byId("music-toggle").disabled = !audioValid;
+audio.addEventListener("error", () => {
+  console.warn("Wedding music asset failed:", audio.error?.code);
+  playbackError("Music could not load. Check the audio path in wedding.config.js, or retry.");
+});
+audio.addEventListener("playing", () => {
+  byId("music-status").hidden = true;
+  byId("music-toggle").textContent = "Sound off";
+  byId("music-toggle").setAttribute("aria-pressed", "true");
+});
+audio.addEventListener("pause", () => { byId("music-toggle").textContent = "Sound on"; byId("music-toggle").setAttribute("aria-pressed", "false"); });
+function playMusic() {
+  if (!audioValid || !musicAllowed || audio.volume === 0) return;
+  if (audio.error) audio.load();
+  // Invoke play synchronously in the visitor's gesture; scene loading never gates playback.
+  const pending = audio.play();
+  pending.catch(error => {
+    if (error.name === "AbortError") return; // A visitor pause/mute can cancel an in-flight play.
+    console.warn("Wedding music playback:", error);
+    playbackError("Music could not start. Tap Retry wedding music to try again.");
+  });
+}
+byId("open-gates").addEventListener("click", playMusic);
+byId("explore-fort").addEventListener("click", playMusic);
+window.addEventListener("wedding:explore", playMusic);
+byId("music-toggle").addEventListener("click", () => {
+  if (!audio.paused && !audio.error) { musicAllowed = false; audio.pause(); }
+  else { musicAllowed = true; if (audio.volume === 0) audio.volume = 0.35; playMusic(); }
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden) audio.pause(); });
 
 async function initialize() {
   if (initializing || unavailable || engine || !events.length) return;
@@ -560,6 +640,107 @@ async function initialize() {
       lamp(world, -4, z, 0.65);
       lamp(world, 4, z, 0.65);
     }
+    // An original palanquin travels only through the clear central courtyard lanes.
+    const doli = group(0, 0.25, 12);
+    box(doli, 0, 0.65, 0, 1.6, 0.28, 1.8, materials.gold, true);
+    box(doli, 0, 0.87, 0, 1.4, 0.16, 1.6, materials.coral, true);
+    for (const x of [-0.68, 0.68]) {
+      box(doli, x, 0.65, 0, 0.1, 0.1, 4.6, materials.wood, true);
+      for (const z of [-0.72, 0.72]) column(doli, x, 1.6, z, 0.045, 1.6, materials.gold, true);
+      box(doli, x, 1.5, 0, 0.035, 1.15, 1.35, materials.coral, true);
+    }
+    shape(doli, dome, materials.coral, [0, 2.45, 0], [1, 0.38, 1.05], [0, 0, 0], true);
+    column(doli, 0, 2.9, 0, 0.045, 0.45, materials.gold, true);
+    sphere(doli, 0, 3.17, 0, 0.09, materials.gold, true);
+    for (let i = 0; i < 11; i++) sphere(doli, -0.75 + i * 0.15, 2.3 - Math.sin(i / 10 * Math.PI) * 0.18, 0.86, 0.05, i % 2 ? materials.ivory : materials.yellow, true);
+    doli.visible = false;
+    const memoryLocations = {};
+    for (const [index, section] of ["story", "family", "people"].entries()) {
+      const x = -6 + index * 6;
+      const p = group(x, 0, -21);
+      const mat = section === "story" ? materials.sage : section === "family" ? materials.gold : materials.rose;
+      box(p, 0, 0.3, 0, 4.5, 0.35, 3.4, mat);
+      arch(p, 0, 1.3, 3.5, 4.2);
+      garland(p, 3.8, 4.1, 1.5, mat);
+      box(p, 0, 2, -1, 3.6, 3, 0.15, materials.wood);
+      ring(p, 0, 2.3, -0.8, 1, materials.gold, [0, 0, 0]);
+      for (const side of [-1, 1]) lamp(p, side * 2, 1.9, 1.2);
+      memoryLocations[section] = { target: new THREE.Vector3(x, 2, -21), position: new THREE.Vector3(x, 4, -13) };
+      const plaque = document.createElement("span");
+      plaque.className = "fort-world-label";
+      plaque.textContent = section === "story" ? "Our story garden" : section === "family" ? "Family haveli" : "Meet the couple";
+      plaque.addEventListener("click", () => discover(section));
+      byId("fort-labels").append(plaque);
+      locations.push({ label: new THREE.Vector3(x, 5, -21) });
+      labelNodes.push(plaque);
+    }
+    // Written information is anchored to the world as well as mirrored in accessible panels.
+    const spatialBoards = [];
+    const memoryBoards = { story: [], family: [], people: [] };
+    const boardTextures = [];
+    const boardMaterials = [];
+    function board(parent, lines, x, y, z, w = 3.1, h = 2.1) {
+      const image = document.createElement("canvas");
+      image.width = 768;
+      image.height = 512;
+      const ctx = image.getContext("2d");
+      if (!ctx) throw new Error("Could not create spatial invitation plaques.");
+      ctx.fillStyle = "#fff0d6";
+      ctx.fillRect(0, 0, 768, 512);
+      ctx.strokeStyle = "#b48a42";
+      ctx.lineWidth = 8;
+      ctx.strokeRect(12, 12, 744, 488);
+      ctx.fillStyle = "#453729";
+      let row = 58;
+      for (const [index, text] of lines.entries()) {
+        ctx.font = index === 0 ? "bold 32px Georgia" : "24px sans-serif";
+        const words = String(text).split(/\s+/);
+        let line = "";
+        for (const word of words) {
+          const next = `${line} ${word}`.trim();
+          if (ctx.measureText(next).width > 688 && line) { ctx.fillText(line, 38, row); row += 32; line = word; }
+          else line = next;
+        }
+        if (row < 470) ctx.fillText(line, 38, row);
+        row += 40;
+        if (row > 470) break;
+      }
+      const texture = new THREE.CanvasTexture(image);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      boardTextures.push(texture);
+      const mat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+      boardMaterials.push(mat);
+      const geo = geometry("plaque", () => new THREE.PlaneGeometry(1, 1));
+      const plaque = new THREE.Mesh(geo, mat);
+      plaque.position.set(x, y, z);
+      plaque.scale.set(w, h, 1);
+      parent.add(plaque);
+      spatialBoards.push(plaque);
+      return plaque;
+    }
+    events.forEach((event, index) => {
+      const side = index % 2 ? 1 : -1;
+      const p = group(side * 12, 0, 10 - Math.floor(index / 2) * 8, -side * Math.PI / 2);
+      const venue = config.venues.find(v => v.id === event.venueId);
+      board(p, [event.name, dateLabel(event.date), event.time, venue.name, venue.address, `Dress: ${event.dressCode || "Not yet provided"}`, `Travel: ${event.directions || venue.directions || "Open Maps from Discover"}`], 0, 2.2, -1.65);
+    });
+    const storyBoard = group(-6, 0, -21);
+    memoryBoards.story.push(board(storyBoard, ["Our story", config.story.intro, "Discover this garden to unfold our timeline."], 0, 2.2, 0));
+    const familyBoard = group(0, 0, -21);
+    memoryBoards.family.push(board(familyBoard, ["Our families", `${config.couple.groom.firstName}'s family · ${config.couple.bride.firstName}'s family`, "Family details are in the haveli. Use Next plaque to meet configured family members."], 0, 2.2, 0));
+    const peopleBoard = group(6, 0, -21);
+    memoryBoards.people.push(board(peopleBoard, [config.couple.bride.fullName, config.couple.bride.roots, config.couple.groom.fullName, config.couple.groom.roots, "Discover to meet the couple."], 0, 2.2, 0));
+    config.story.chapters.forEach((chapter, index) => {
+      const p = group(-6, 0, -21);
+      memoryBoards.story.push(board(p, [chapter.label, chapter.date, chapter.title, chapter.text], 0, 2.2, 0));
+    });
+    for (const role of ["groom", "bride"]) {
+      const person = config.couple[role];
+      memoryBoards.people.push(board(peopleBoard, [person.fullName, person.roots, person.bio], 0, 2.2, 0));
+      const members = config.family?.[role] || [];
+      if (!members.length) memoryBoards.family.push(board(familyBoard, [`${person.firstName}'s family`, "Family introductions have not yet been provided."], 0, 2.2, 0));
+      for (const member of members) memoryBoards.family.push(board(familyBoard, [member.name, member.relationship || "", member.bio || ""], 0, 2.2, 0));
+    }
     scene.updateMatrixWorld(true);
     for (const { geo, mat, objects } of groups.values()) {
       const instances = new THREE.InstancedMesh(geo, mat, objects.length);
@@ -581,6 +762,71 @@ async function initialize() {
     let height = 0;
     let slowFrames = 0;
     let orbitAngle = 0;
+    const held = new Set();
+    let heading = 0;
+    let driving = false;
+    let nearby = null;
+    const obstacles = [{ x: 0, z: -4, radius: 4.1 }];
+    for (let z = -19; z <= 14; z += 3) for (const x of [-4, 4]) obstacles.push({ x, z, radius: 0.55 });
+    const navigationTargets = [
+      ...events.map((event, index) => ({ x: index % 2 ? 6.8 : -6.8, z: 10 - Math.floor(index / 2) * 8, index, name: event.name })),
+      ...Object.entries(memoryLocations).map(([section, place]) => ({ x: place.target.x, z: -18, section, name: section === "story" ? "Our story garden" : section === "family" ? "Family haveli" : "Meet the couple" }))
+    ];
+    function canMove(x, z) {
+      return x >= -7.3 && x <= 7.3 && z >= -18.5 && z <= 12 &&
+        obstacles.every(o => Math.hypot(x - o.x, z - o.z) >= o.radius);
+    }
+    function proximity() {
+      let nearest = null;
+      let distance = 3;
+      for (const place of navigationTargets) {
+        const candidate = Math.hypot(place.x - doli.position.x, place.z - doli.position.z);
+        if (candidate < distance) { nearest = place; distance = candidate; }
+      }
+      if (nearby !== nearest) {
+        nearby = nearest;
+        byId("doli-prompt").textContent = nearby ? `${nearby.name} is nearby. Press Enter or Discover.` : "Carry the doli towards a celebration. Arrow keys / WASD.";
+        byId("doli-interact").disabled = !nearby;
+      }
+    }
+    function carry(dt) {
+      if (!driving || selected !== null || memory !== null || transition) return;
+      const turn = (held.has("left") ? 1 : 0) - (held.has("right") ? 1 : 0);
+      const speed = (held.has("forward") ? 1 : 0) - (held.has("backward") ? 1 : 0);
+      heading += turn * dt * 1.9;
+      const x = doli.position.x + Math.sin(heading) * speed * dt * 4;
+      const z = doli.position.z - Math.cos(heading) * speed * dt * 4;
+      if (canMove(x, z)) doli.position.set(x, 0.25, z);
+      else {
+        if (canMove(x, doli.position.z)) doli.position.x = x;
+        if (canMove(doli.position.x, z)) doli.position.z = z;
+      }
+      doli.rotation.y = -heading;
+      proximity();
+      const offset = width < 700 ? new THREE.Vector3(0, 12, 6) : new THREE.Vector3(0, 10, 6);
+      const target = doli.position.clone().add(offset);
+      camera.position.lerp(target, reducedMotion.matches ? 1 : Math.min(dt * 5, 1));
+      look.copy(doli.position).add(new THREE.Vector3(0, 0.8, -3));
+    }
+    const keys = { ArrowUp: "forward", w: "forward", W: "forward", ArrowDown: "backward", s: "backward", S: "backward", ArrowLeft: "left", a: "left", A: "left", ArrowRight: "right", d: "right", D: "right" };
+    const keyHandler = (event, down) => {
+      if (entrance.hidden || !driving || selected !== null || memory !== null || event.target.matches("input,textarea,select")) return;
+      const direction = keys[event.key];
+      if (direction) { event.preventDefault(); if (down) held.add(direction); else held.delete(direction); start(); }
+      if (down && event.key === "Enter" && !event.target.closest("button,a,input")) { event.preventDefault(); engine.interact(); }
+    };
+    document.addEventListener("keydown", event => keyHandler(event, true));
+    document.addEventListener("keyup", event => keyHandler(event, false));
+    window.addEventListener("blur", () => held.clear());
+    document.querySelectorAll("[data-drive]").forEach(button => {
+      button.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        held.add(button.dataset.drive);
+        start();
+      });
+      for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) button.addEventListener(type, () => held.delete(button.dataset.drive));
+    });
     const roomLight = new THREE.PointLight(0xffc586, 0, 12, 2);
     scene.add(roomLight);
     const particleCount = mobile ? 48 : 90;
@@ -658,7 +904,7 @@ async function initialize() {
       camera.updateProjectionMatrix();
     };
     function labels() {
-      const showing = entrance.classList.contains("is-exploring") && selected === null && !transition;
+      const showing = entrance.classList.contains("is-exploring") && selected === null && memory === null && !transition;
       labelNodes.forEach((node, index) => {
         if (!showing) { node.hidden = true; return; }
         projected.copy(locations[index].label).project(camera);
@@ -683,6 +929,7 @@ async function initialize() {
       const frameMs = now - lastFrame;
       if (!reducedMotion.matches && frameMs < 32) { animation = requestAnimationFrame(render); return; }
       lastFrame = now;
+      carry(Math.min(frameMs / 1000 || 0, 0.05));
       if (frameMs > 65 && frameMs < 500) slowFrames++;
       if (slowFrames === 35 && renderer.getPixelRatio() > 1) renderer.setPixelRatio(1);
       if (transition) {
@@ -700,6 +947,9 @@ async function initialize() {
           complete?.();
         }
       }
+      for (const [section, plaques] of Object.entries(memoryBoards)) plaques.forEach((plaque, index) => {
+        plaque.visible = memory === section ? index === memoryPage % plaques.length : index === 0;
+      });
       gateHinges[0].rotation.y = -doorAngle * Math.PI * 0.49;
       gateHinges[1].rotation.y = doorAngle * Math.PI * 0.49;
       const a = reducedMotion.matches ? 0.6 : now / 5000;
@@ -710,7 +960,7 @@ async function initialize() {
       labels();
       renderer.setViewport(0, 0, width, height);
       renderer.clear();
-      if (selected !== null && entrance.classList.contains("is-exploring")) {
+      if ((selected !== null || memory !== null) && entrance.classList.contains("is-exploring")) {
         const viewportWidth = width < 700 ? width : width * 0.62;
         const viewportHeight = width < 700 ? height * 0.48 : height;
         renderer.setViewport(0, height - viewportHeight, viewportWidth, viewportHeight);
@@ -719,7 +969,7 @@ async function initialize() {
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
       entrance.classList.add("three-ready");
-      if (!reducedMotion.matches || transition) animation = requestAnimationFrame(render);
+      if (!reducedMotion.matches || transition || held.size) animation = requestAnimationFrame(render);
     }
     function start() {
       if (animation || entrance.hidden || contextLost || document.hidden || suspended) return;
@@ -730,12 +980,16 @@ async function initialize() {
         resize();
         roomLight.intensity = 0;
         orbitAngle = 0;
-        const view = overview();
+        driving = true;
+        doli.visible = true;
+        const view = { position: new THREE.Vector3(0, 10, 18), target: new THREE.Vector3(0, 1, 9) };
         if (reducedMotion.matches) move(view.position, view.target);
         else move(new THREE.Vector3(0, 4, 12), new THREE.Vector3(0, 2, -4), 2400, 1, null,
           () => move(view.position, view.target, 1800));
       },
       visit(index) {
+        held.clear();
+        driving = false;
         resize();
         const place = locations[index];
         const theme = themeFor(events[index]);
@@ -749,9 +1003,35 @@ async function initialize() {
         if (width < 700) { position.y += 1.2; position.x *= 0.75; }
         move(position, place.target.clone(), 1500);
       },
-      courtyard() { orbitAngle = 0; roomLight.intensity = 0; shower.visible = false; splash.visible = false; const view = overview(); move(view.position, view.target); },
+      courtyard() {
+        driving = true; doli.visible = true; held.clear(); orbitAngle = 0; roomLight.intensity = 0; shower.visible = false; splash.visible = false;
+        move(doli.position.clone().add(new THREE.Vector3(0, 10, 6)), doli.position.clone().add(new THREE.Vector3(0, 1, -3)));
+      },
+      memory(section) {
+        driving = false;
+        held.clear();
+        roomLight.intensity = 0;
+        shower.visible = false;
+        splash.visible = false;
+        const place = memoryLocations[section];
+        move(place.position.clone(), place.target.clone());
+      },
+      page(delta) {
+        if (!memory) return;
+        memoryPage = (memoryPage + delta + memoryBoards[memory].length) % memoryBoards[memory].length;
+        setStatus(`Plaque ${memoryPage + 1} of ${memoryBoards[memory].length}`);
+        start();
+      },
+      interact() {
+        if (!nearby || !driving) return;
+        if (nearby.section) discover(nearby.section);
+        else selectEvent(nearby.index);
+      },
+      recover() {
+        doli.position.set(0, 0.25, 12); heading = 0; held.clear(); proximity(); this.courtyard();
+      },
       orbit(delta) {
-        if (selected !== null || !entrance.classList.contains("is-exploring")) return;
+        if (selected !== null || memory !== null || !entrance.classList.contains("is-exploring")) return;
         orbitAngle = THREE.MathUtils.clamp(orbitAngle + delta, -0.4, 0.4);
         const view = overview();
         const offset = view.position.clone().sub(view.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitAngle);
@@ -760,6 +1040,11 @@ async function initialize() {
       reset() {
         transition = null;
         doorAngle = 0;
+        driving = false;
+        held.clear();
+        doli.visible = false;
+        doli.position.set(0, 0.25, 12);
+        heading = 0;
         orbitAngle = 0;
         roomLight.intensity = 0;
         shower.visible = false;
@@ -769,7 +1054,7 @@ async function initialize() {
         start();
       },
       stats() {
-        return { drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), transitioning: !!transition, camera: camera.position.toArray(), orbitAngle, effect: effectKind, particlesVisible: shower.visible, particleLimit: particleCount };
+        return { drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, pixelRatio: renderer.getPixelRatio(), transitioning: !!transition, camera: camera.position.toArray(), orbitAngle, effect: effectKind, particlesVisible: shower.visible, particleLimit: particleCount, doli: doli.position.toArray(), heading, driving, nearby: nearby?.name || null, memoryPage, visibleMemoryPlaque: memory ? memoryBoards[memory].findIndex(plaque => plaque.visible) : null, spatialPlaques: spatialBoards.length };
       },
       effects(enabled) {
         if (!enabled) { shower.visible = false; splash.visible = false; }
@@ -820,12 +1105,13 @@ async function initialize() {
     window.addEventListener("resize", () => {
       resize();
       if (!entrance.hidden && entrance.classList.contains("is-exploring")) {
-        if (selected !== null) engine.visit(selected);
+        if (memory !== null) engine.memory(memory);
+        else if (selected !== null) engine.visit(selected);
         else engine.courtyard();
       }
       start();
     });
-    document.addEventListener("visibilitychange", start);
+    document.addEventListener("visibilitychange", () => { held.clear(); start(); });
     reducedMotion.addEventListener("change", () => {
       if (reducedMotion.matches && transition) {
         camera.position.copy(transition.to);
@@ -849,6 +1135,8 @@ async function initialize() {
       petalGeo.dispose();
       petalMat.dispose();
       splash.material.dispose();
+      boardTextures.forEach(texture => texture.dispose());
+      boardMaterials.forEach(mat => mat.dispose());
     });
     window.addEventListener("pageshow", () => { suspended = false; start(); });
     resize();
@@ -856,7 +1144,8 @@ async function initialize() {
     loading.hidden = true;
     setStatus("Your courtyard is ready. Choose a celebration to step inside.");
     if (entrance.classList.contains("is-exploring")) {
-      if (selected !== null) engine.visit(selected);
+      if (memory !== null) engine.memory(memory);
+      else if (selected !== null) engine.visit(selected);
       else engine.enter();
     }
   } catch (error) {
@@ -867,6 +1156,9 @@ async function initialize() {
     loading.hidden = false;
     loading.textContent = "3D unavailable on this device. The illustrated welcome and every event detail are still available.";
     setStatus("Illustrated mode. Choose any celebration below to read its details.");
+    byId("doli-prompt").textContent = "3D travel is unavailable. Choose a celebration, story or family destination instead.";
+    document.querySelectorAll("[data-drive]").forEach(button => { button.disabled = true; });
+    byId("doli-recover").disabled = true;
     entrance.classList.remove("three-ready");
   } finally {
     initializing = false;
@@ -877,7 +1169,8 @@ new MutationObserver(() => {
   if (!reducedMotion.matches || entrance.classList.contains("is-exploring")) initialize();
   engine?.reset();
   if (entrance.classList.contains("is-exploring")) {
-    if (selected !== null) engine?.visit(selected);
+    if (memory !== null) engine?.memory(memory);
+    else if (selected !== null) engine?.visit(selected);
     else engine?.enter();
   }
 }).observe(entrance, { attributes: true, attributeFilter: ["hidden"] });

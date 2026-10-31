@@ -38,6 +38,14 @@ window.WEDDING_CONFIG = {
   experience: {
     effects: true
   },
+  // User supplied this recording and confirmed permission for public redistribution.
+  // Playback starts with the explicit "Open the gates" / explore gesture, never before.
+  music: {
+    src: "./assets/kalyani-remix.mp3",
+    title: "Kalyani (Remix)",
+    enabled: true,
+    volume: 0.35
+  },
   wedding: {
     date: "2027-12-03", // YYYY-MM-DD. Times below are displayed exactly as written.
     locationLabel: "Guruvyaur, Kerala · India",
